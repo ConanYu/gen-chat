@@ -3,24 +3,21 @@ import QQChat from "./gen-qq";
 import domtoimage from "dom-to-image";
 import {Button, Input, Upload} from "@douyinfe/semi-ui";
 import {IconUpload, IconDownload} from '@douyinfe/semi-icons';
+
 const FileSaver = require('file-saver');
 
-let graphDataUrl = '';
+function genGraphData(): Promise<string | void> {
+    const node: any = document.getElementById('node');
+    return domtoimage.toPng(node)
+        .catch(function (error) {
+            console.error('oops, something went wrong!', error);
+        });
+}
 
 function App() {
     const [avatar, setAvatar] = React.useState('');
     const [name, setName] = React.useState('');
     const [message, setMessage] = React.useState('');
-    setTimeout(() => {
-        const node: any = document.getElementById('node');
-        domtoimage.toPng(node)
-            .then(function (dataUrl) {
-                graphDataUrl = dataUrl;
-            })
-            .catch(function (error) {
-                console.error('oops, something went wrong!', error);
-            });
-    }, 20);
     return (
         <>
             <div id="node">
@@ -65,10 +62,12 @@ function App() {
                 <Button icon={<IconDownload/>} theme="light" style={{
                     margin: '0 0 0 30px',
                 }} onClick={() => {
-                    if (graphDataUrl !== '') {
-                        const now = Date.now();
-                        FileSaver(graphDataUrl, `gen-chat-${now}.png`);
-                    }
+                    genGraphData().then((url) => {
+                        if (url) {
+                            const now = Date.now();
+                            FileSaver(url, `gen-chat-${now}.png`);
+                        }
+                    });
                 }}>
                     保存为图片
                 </Button>
